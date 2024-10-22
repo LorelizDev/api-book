@@ -2,6 +2,7 @@ import userModel from "../models/userModel.js";
 import dotenv from "dotenv";
 import { handleHttpError } from "../utils/handleError.js";
 import { encrypt, compare } from "../utils/handlePassword.js";
+import { tokenSign } from "../utils/handleJWT.js";
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ export const loginController = async (req, res) => {
     }
 
     const sessionData = {
+      token: await tokenSign(user),
       user: user,
     };
 
