@@ -1,16 +1,20 @@
 import userModel from "../models/userModel.js";
 import dotenv from "dotenv";
 import { handleHttpError } from "../utils/handleError.js";
+import { encrypt, compare } from "../utils/handlePassword.js";
+
 dotenv.config();
 
 export const registerController = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    const passwordHashed = await encrypt(password);
+
     const newUser = {
       name,
       email,
-      password,
+      password: passwordHashed,
     };
     
     const existingUserByEmail = await userModel.findOne({ where: { email } });
@@ -43,7 +47,10 @@ export const loginController = async (req, res) => {
       return;
     }
 
-    if (loginPassword !== user.password) {
+    const passwordHashed = user.password;
+    const checkPassword = await compare(loginPassword, passwordHashed);
+
+    if (!checkPassword) {
       handleHttpError(res, "❌ PASSWORD_INVALID", 401);
       return;
     }
